@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "s21_string.h"
+#include "MY_string.h"
 
 typedef struct {
   int minus;
@@ -22,7 +22,7 @@ typedef struct {
   char specifier;
 } FormatSpec;
 
-static void s21_reverse_str(char *str, int len) {
+static void MY_reverse_str(char *str, int len) {
   int start = 0;
   int end = len - 1;
   while (start < end) {
@@ -34,17 +34,17 @@ static void s21_reverse_str(char *str, int len) {
   }
 }
 
-static int s21_isdigit(char c) { return (c >= '0' && c <= '9'); }
-static int s21_atoi(const char **str) {
+static int MY_isdigit(char c) { return (c >= '0' && c <= '9'); }
+static int MY_atoi(const char **str) {
   int result = 0;
-  while (s21_isdigit(**str)) {
+  while (MY_isdigit(**str)) {
     result = result * 10 + (**str - '0');
     (*str)++;
   }
   return result;
 }
 
-static void s21_init_format_spec(FormatSpec *spec) {
+static void MY_init_format_spec(FormatSpec *spec) {
   spec->minus = 0;
   spec->plus = 0;
   spec->space = 0;
@@ -59,7 +59,7 @@ static void s21_init_format_spec(FormatSpec *spec) {
   spec->specifier = 0;
 }
 
-static void s21_parse_flags(const char **format, FormatSpec *spec) {
+static void MY_parse_flags(const char **format, FormatSpec *spec) {
   int done = 0;
   while (!done) {
     switch (**format) {
@@ -96,48 +96,48 @@ static void s21_parse_flags(const char **format, FormatSpec *spec) {
   }
 }
 
-static void s21_parse_width(const char **format, FormatSpec *spec) {
+static void MY_parse_width(const char **format, FormatSpec *spec) {
   if (**format == '*') {
     spec->width_star = 1;
     (*format)++;
-  } else if (s21_isdigit(**format)) {
-    spec->width = s21_atoi(format);
+  } else if (MY_isdigit(**format)) {
+    spec->width = MY_atoi(format);
   }
 }
 
-static void s21_parse_precision(const char **format, FormatSpec *spec) {
+static void MY_parse_precision(const char **format, FormatSpec *spec) {
   if (**format == '.') {
     (*format)++;
     spec->has_precision = 1;
     if (**format == '*') {
       spec->prec_star = 1;
       (*format)++;
-    } else if (s21_isdigit(**format)) {
-      spec->precision = s21_atoi(format);
+    } else if (MY_isdigit(**format)) {
+      spec->precision = MY_atoi(format);
     } else {
       spec->precision = 0;
     }
   }
 }
 
-static void s21_parse_length(const char **format, FormatSpec *spec) {
+static void MY_parse_length(const char **format, FormatSpec *spec) {
   if (**format == 'h' || **format == 'l' || **format == 'L') {
     spec->length = **format;
     (*format)++;
   }
 }
 
-void s21_parse_format(const char **format, FormatSpec *spec) {
-  s21_init_format_spec(spec);
-  s21_parse_flags(format, spec);
-  s21_parse_width(format, spec);
-  s21_parse_precision(format, spec);
-  s21_parse_length(format, spec);
+void MY_parse_format(const char **format, FormatSpec *spec) {
+  MY_init_format_spec(spec);
+  MY_parse_flags(format, spec);
+  MY_parse_width(format, spec);
+  MY_parse_precision(format, spec);
+  MY_parse_length(format, spec);
   spec->specifier = **format;
   (*format)++;
 }
 
-static int s21_uint_to_str(char *buf, unsigned long long value, int base,
+static int MY_uint_to_str(char *buf, unsigned long long value, int base,
                            int uppercase) {
   const char *digits_lower = "0123456789abcdef";
   const char *digits_upper = "0123456789ABCDEF";
@@ -152,19 +152,19 @@ static int s21_uint_to_str(char *buf, unsigned long long value, int base,
       value /= base;
     }
   }
-  s21_reverse_str(buf, len);
+  MY_reverse_str(buf, len);
   buf[len] = '\0';
   return len;
 }
 
-static int s21_add_padding(char *str, int count, char pad_char) {
+static int MY_add_padding(char *str, int count, char pad_char) {
   for (int i = 0; i < count; i++) {
     str[i] = pad_char;
   }
   return count;
 }
 
-int s21_format_char(char *str, const FormatSpec *spec, int c) {
+int MY_format_char(char *str, const FormatSpec *spec, int c) {
   int len = 0;
   int padding;
   if (spec->width > 1) {
@@ -173,21 +173,21 @@ int s21_format_char(char *str, const FormatSpec *spec, int c) {
     padding = 0;
   }
   if (!spec->minus && padding > 0) {
-    len += s21_add_padding(str + len, padding, ' ');
+    len += MY_add_padding(str + len, padding, ' ');
   }
   str[len++] = (char)c;
   if (spec->minus && padding > 0) {
-    len += s21_add_padding(str + len, padding, ' ');
+    len += MY_add_padding(str + len, padding, ' ');
   }
   return len;
 }
 
-int s21_format_string(char *str, const FormatSpec *spec, const char *s) {
+int MY_format_string(char *str, const FormatSpec *spec, const char *s) {
   int len = 0;
-  if (s == S21_NULL) {
+  if (s == MY_NULL) {
     s = "(null)";
   }
-  int str_len = (int)s21_strlen(s);
+  int str_len = (int)MY_strlen(s);
   if (spec->has_precision && spec->precision >= 0 &&
       spec->precision < str_len) {
     str_len = spec->precision;
@@ -198,17 +198,17 @@ int s21_format_string(char *str, const FormatSpec *spec, const char *s) {
   else
     padding = 0;
   if (!spec->minus && padding > 0) {
-    len += s21_add_padding(str + len, padding, ' ');
+    len += MY_add_padding(str + len, padding, ' ');
   }
-  s21_memcpy(str + len, s, str_len);
+  MY_memcpy(str + len, s, str_len);
   len += str_len;
   if (spec->minus && padding > 0) {
-    len += s21_add_padding(str + len, padding, ' ');
+    len += MY_add_padding(str + len, padding, ' ');
   }
   return len;
 }
 
-int s21_format_int(char *str, FormatSpec *spec, long long value) {
+int MY_format_int(char *str, FormatSpec *spec, long long value) {
   char num_buf[64];
   int num_len;
   int is_negative = 0;
@@ -219,7 +219,7 @@ int s21_format_int(char *str, FormatSpec *spec, long long value) {
   } else {
     abs_value = (unsigned long long)value;
   }
-  num_len = s21_uint_to_str(num_buf, abs_value, 10, 0);
+  num_len = MY_uint_to_str(num_buf, abs_value, 10, 0);
   if (value == 0 && spec->has_precision && spec->precision == 0) {
     num_len = 0;
     num_buf[0] = '\0';
@@ -241,28 +241,28 @@ int s21_format_int(char *str, FormatSpec *spec, long long value) {
       spec->width > total_num_len ? spec->width - total_num_len : 0;
   int len = 0;
   if (!spec->minus && !spec->zero && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, ' ');
+    len += MY_add_padding(str + len, field_padding, ' ');
   }
   if (sign_char) {
     str[len++] = sign_char;
   }
   if (spec->zero && !spec->has_precision && !spec->minus && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, '0');
+    len += MY_add_padding(str + len, field_padding, '0');
     field_padding = 0;
   }
-  len += s21_add_padding(str + len, zero_padding, '0');
-  s21_memcpy(str + len, num_buf, num_len);
+  len += MY_add_padding(str + len, zero_padding, '0');
+  MY_memcpy(str + len, num_buf, num_len);
   len += num_len;
   if (spec->minus && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, ' ');
+    len += MY_add_padding(str + len, field_padding, ' ');
   }
   return len;
 }
 
-int s21_format_uint(char *str, FormatSpec *spec, unsigned long long value) {
+int MY_format_uint(char *str, FormatSpec *spec, unsigned long long value) {
   char num_buf[64];
   int num_len;
-  num_len = s21_uint_to_str(num_buf, value, 10, 0);
+  num_len = MY_uint_to_str(num_buf, value, 10, 0);
   if (value == 0 && spec->has_precision && spec->precision == 0) {
     num_len = 0;
     num_buf[0] = '\0';
@@ -274,25 +274,25 @@ int s21_format_uint(char *str, FormatSpec *spec, unsigned long long value) {
       spec->width > total_num_len ? spec->width - total_num_len : 0;
   int len = 0;
   if (!spec->minus && !spec->zero && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, ' ');
+    len += MY_add_padding(str + len, field_padding, ' ');
   }
   if (spec->zero && !spec->has_precision && !spec->minus && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, '0');
+    len += MY_add_padding(str + len, field_padding, '0');
     field_padding = 0;
   }
-  len += s21_add_padding(str + len, zero_padding, '0');
-  s21_memcpy(str + len, num_buf, num_len);
+  len += MY_add_padding(str + len, zero_padding, '0');
+  MY_memcpy(str + len, num_buf, num_len);
   len += num_len;
   if (spec->minus && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, ' ');
+    len += MY_add_padding(str + len, field_padding, ' ');
   }
   return len;
 }
 
-int s21_format_octal(char *str, FormatSpec *spec, unsigned long long value) {
+int MY_format_octal(char *str, FormatSpec *spec, unsigned long long value) {
   char num_buf[64];
   int num_len;
-  num_len = s21_uint_to_str(num_buf, value, 8, 0);
+  num_len = MY_uint_to_str(num_buf, value, 8, 0);
   if (value == 0 && spec->has_precision && spec->precision == 0 &&
       !spec->hash) {
     num_len = 0;
@@ -311,29 +311,29 @@ int s21_format_octal(char *str, FormatSpec *spec, unsigned long long value) {
   int field_padding = spec->width > total_len ? spec->width - total_len : 0;
   int len = 0;
   if (!spec->minus && !spec->zero && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, ' ');
+    len += MY_add_padding(str + len, field_padding, ' ');
   }
   if (prefix_len > 0) {
     str[len++] = '0';
   }
   if (spec->zero && !spec->has_precision && !spec->minus && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, '0');
+    len += MY_add_padding(str + len, field_padding, '0');
     field_padding = 0;
   }
-  len += s21_add_padding(str + len, zero_padding, '0');
-  s21_memcpy(str + len, num_buf, num_len);
+  len += MY_add_padding(str + len, zero_padding, '0');
+  MY_memcpy(str + len, num_buf, num_len);
   len += num_len;
   if (spec->minus && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, ' ');
+    len += MY_add_padding(str + len, field_padding, ' ');
   }
   return len;
 }
 
-int s21_format_hex(char *str, FormatSpec *spec, unsigned long long value,
+int MY_format_hex(char *str, FormatSpec *spec, unsigned long long value,
                    int uppercase) {
   char num_buf[64];
   int num_len;
-  num_len = s21_uint_to_str(num_buf, value, 16, uppercase);
+  num_len = MY_uint_to_str(num_buf, value, 16, uppercase);
   if (value == 0 && spec->has_precision && spec->precision == 0) {
     num_len = 0;
     num_buf[0] = '\0';
@@ -350,37 +350,37 @@ int s21_format_hex(char *str, FormatSpec *spec, unsigned long long value,
 
   int len = 0;
   if (!spec->minus && !spec->zero && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, ' ');
+    len += MY_add_padding(str + len, field_padding, ' ');
   }
   if (prefix_len > 0) {
     str[len++] = '0';
     str[len++] = uppercase ? 'X' : 'x';
   }
   if (spec->zero && !spec->has_precision && !spec->minus && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, '0');
+    len += MY_add_padding(str + len, field_padding, '0');
     field_padding = 0;
   }
-  len += s21_add_padding(str + len, zero_padding, '0');
-  s21_memcpy(str + len, num_buf, num_len);
+  len += MY_add_padding(str + len, zero_padding, '0');
+  MY_memcpy(str + len, num_buf, num_len);
   len += num_len;
   if (spec->minus && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, ' ');
+    len += MY_add_padding(str + len, field_padding, ' ');
   }
   return len;
 }
 
-int s21_format_pointer(char *str, const FormatSpec *spec, void *ptr) {
-  if (ptr == S21_NULL) {
+int MY_format_pointer(char *str, const FormatSpec *spec, void *ptr) {
+  if (ptr == MY_NULL) {
     FormatSpec temp_spec = *spec;
     temp_spec.hash = 0;
-    return s21_format_string(str, &temp_spec, "(nil)");
+    return MY_format_string(str, &temp_spec, "(nil)");
   }
   FormatSpec temp_spec = *spec;
   temp_spec.hash = 1;
-  return s21_format_hex(str, &temp_spec, (unsigned long long)(uintptr_t)ptr, 0);
+  return MY_format_hex(str, &temp_spec, (unsigned long long)(uintptr_t)ptr, 0);
 }
 
-static void s21_round_and_extract(long double value, int precision,
+static void MY_round_and_extract(long double value, int precision,
                                   unsigned long long *int_part_out,
                                   char *frac_digits, int *frac_len) {
   long double multiplier = 1.0L;
@@ -404,7 +404,7 @@ static void s21_round_and_extract(long double value, int precision,
   frac_digits[precision] = '\0';
 }
 
-int s21_handle_special_float(char *str, const FormatSpec *spec,
+int MY_handle_special_float(char *str, const FormatSpec *spec,
                              long double value, int is_negative,
                              int uppercase) {
   int len = 0;
@@ -426,15 +426,15 @@ int s21_handle_special_float(char *str, const FormatSpec *spec,
                       : 0;
 
     if (!spec->minus && padding > 0) {
-      len += s21_add_padding(str + len, padding, ' ');
+      len += MY_add_padding(str + len, padding, ' ');
     }
     if (sign_char) {
       str[len++] = sign_char;
     }
-    s21_memcpy(str + len, special_str, str_len);
+    MY_memcpy(str + len, special_str, str_len);
     len += str_len;
     if (spec->minus && padding > 0) {
-      len += s21_add_padding(str + len, padding, ' ');
+      len += MY_add_padding(str + len, padding, ' ');
     }
   } else if (isnan(value)) {
     const char *special_str = uppercase ? "NAN" : "nan";
@@ -442,18 +442,18 @@ int s21_handle_special_float(char *str, const FormatSpec *spec,
     int padding = spec->width > str_len ? spec->width - str_len : 0;
 
     if (!spec->minus && padding > 0) {
-      len += s21_add_padding(str + len, padding, ' ');
+      len += MY_add_padding(str + len, padding, ' ');
     }
-    s21_memcpy(str + len, special_str, str_len);
+    MY_memcpy(str + len, special_str, str_len);
     len += str_len;
     if (spec->minus && padding > 0) {
-      len += s21_add_padding(str + len, padding, ' ');
+      len += MY_add_padding(str + len, padding, ' ');
     }
   }
   return len;
 }
 
-int s21_format_float(char *str, const FormatSpec *spec, long double value) {
+int MY_format_float(char *str, const FormatSpec *spec, long double value) {
   int len = 0, num_len = 0, is_negative = 0;
   char num_buf[512];
   if (value < 0) {
@@ -461,7 +461,7 @@ int s21_format_float(char *str, const FormatSpec *spec, long double value) {
     value = -value;
   }
   if (isinf(value) || isnan(value)) {
-    return s21_handle_special_float(str, spec, value, is_negative, 0);
+    return MY_handle_special_float(str, spec, value, is_negative, 0);
   }
   int precision = 6;
   if (spec->has_precision) {
@@ -470,8 +470,8 @@ int s21_format_float(char *str, const FormatSpec *spec, long double value) {
   unsigned long long int_part;
   char frac_digits[64];
   int frac_len;
-  s21_round_and_extract(value, precision, &int_part, frac_digits, &frac_len);
-  num_len = s21_uint_to_str(num_buf, int_part, 10, 0);
+  MY_round_and_extract(value, precision, &int_part, frac_digits, &frac_len);
+  num_len = MY_uint_to_str(num_buf, int_part, 10, 0);
   if (precision > 0 || spec->hash) {
     num_buf[num_len++] = '.';
     for (int i = 0; i < frac_len; i++) {
@@ -491,16 +491,16 @@ int s21_format_float(char *str, const FormatSpec *spec, long double value) {
   int total_len = sign_len + num_len;
   int field_padding = spec->width > total_len ? spec->width - total_len : 0;
   if (!spec->minus && !spec->zero && field_padding > 0)
-    len += s21_add_padding(str + len, field_padding, ' ');
+    len += MY_add_padding(str + len, field_padding, ' ');
   if (sign_char) str[len++] = sign_char;
   if (spec->zero && !spec->minus && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, '0');
+    len += MY_add_padding(str + len, field_padding, '0');
     field_padding = 0;
   }
-  s21_memcpy(str + len, num_buf, num_len);
+  MY_memcpy(str + len, num_buf, num_len);
   len += num_len;
   if (spec->minus && field_padding > 0)
-    len += s21_add_padding(str + len, field_padding, ' ');
+    len += MY_add_padding(str + len, field_padding, ' ');
   return len;
 }
 
@@ -523,13 +523,13 @@ static int build_exponential_number(long double value, int precision,
   unsigned long long int_part;
   char frac_digits[64];
   int frac_len;
-  s21_round_and_extract(value, precision, &int_part, frac_digits, &frac_len);
+  MY_round_and_extract(value, precision, &int_part, frac_digits, &frac_len);
   if (int_part >= 10) {
     int_part = 1;
     exponent++;
-    s21_round_and_extract(1.0L, precision, &int_part, frac_digits, &frac_len);
+    MY_round_and_extract(1.0L, precision, &int_part, frac_digits, &frac_len);
   }
-  num_len = s21_uint_to_str(num_buf, int_part, 10, 0);
+  num_len = MY_uint_to_str(num_buf, int_part, 10, 0);
   if (precision > 0) {
     num_buf[num_len++] = '.';
     for (int i = 0; i < frac_len; i++) {
@@ -549,8 +549,8 @@ static int build_exponential_number(long double value, int precision,
     num_buf[num_len++] = '0' + exponent % 10;
   } else {
     char exp_buf[16];
-    int exp_len = s21_uint_to_str(exp_buf, exponent, 10, 0);
-    s21_memcpy(num_buf + num_len, exp_buf, exp_len);
+    int exp_len = MY_uint_to_str(exp_buf, exponent, 10, 0);
+    MY_memcpy(num_buf + num_len, exp_buf, exp_len);
     num_len += exp_len;
   }
   num_buf[num_len] = '\0';
@@ -558,7 +558,7 @@ static int build_exponential_number(long double value, int precision,
   return num_len;
 }
 
-int s21_format_exp(char *str, FormatSpec *spec, long double value,
+int MY_format_exp(char *str, FormatSpec *spec, long double value,
                    int uppercase) {
   int len = 0;
   int is_negative = 0;
@@ -567,7 +567,7 @@ int s21_format_exp(char *str, FormatSpec *spec, long double value,
     value = -value;
   }
   if (isinf(value) || isnan(value)) {
-    return s21_handle_special_float(str, spec, value, is_negative, uppercase);
+    return MY_handle_special_float(str, spec, value, is_negative, uppercase);
   }
   int precision = spec->has_precision ? spec->precision : 6;
   char num_buf[512];
@@ -585,24 +585,24 @@ int s21_format_exp(char *str, FormatSpec *spec, long double value,
   int total_len = sign_len + num_len;
   int field_padding = spec->width > total_len ? spec->width - total_len : 0;
   if (!spec->minus && !spec->zero && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, ' ');
+    len += MY_add_padding(str + len, field_padding, ' ');
   }
   if (sign_char) {
     str[len++] = sign_char;
   }
   if (spec->zero && !spec->minus && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, '0');
+    len += MY_add_padding(str + len, field_padding, '0');
     field_padding = 0;
   }
-  s21_memcpy(str + len, num_buf, num_len);
+  MY_memcpy(str + len, num_buf, num_len);
   len += num_len;
   if (spec->minus && field_padding > 0) {
-    len += s21_add_padding(str + len, field_padding, ' ');
+    len += MY_add_padding(str + len, field_padding, ' ');
   }
   return len;
 }
 
-static int s21_trim_trailing_zeros(char *str, int len, int has_hash) {
+static int MY_trim_trailing_zeros(char *str, int len, int has_hash) {
   if (!has_hash) {
     int dot_pos = -1;
     for (int i = 0; i < len; i++) {
@@ -641,7 +641,7 @@ static int s21_trim_trailing_zeros(char *str, int len, int has_hash) {
   return len;
 }
 
-int s21_format_g(char *str, const FormatSpec *spec, long double value,
+int MY_format_g(char *str, const FormatSpec *spec, long double value,
                  int uppercase) {
   int precision = 6;
   if (spec->has_precision) precision = spec->precision;
@@ -659,31 +659,31 @@ int s21_format_g(char *str, const FormatSpec *spec, long double value,
     FormatSpec temp_spec = *spec;
     temp_spec.precision = precision - 1;
     temp_spec.has_precision = 1;
-    len = s21_format_exp(str, &temp_spec, value, uppercase);
+    len = MY_format_exp(str, &temp_spec, value, uppercase);
   } else {
     FormatSpec temp_spec = *spec;
     temp_spec.precision = precision - 1 - exponent;
     if (temp_spec.precision < 0) temp_spec.precision = 0;
     temp_spec.has_precision = 1;
-    len = s21_format_float(str, &temp_spec, value);
+    len = MY_format_float(str, &temp_spec, value);
   }
-  len = s21_trim_trailing_zeros(str, len, spec->hash);
+  len = MY_trim_trailing_zeros(str, len, spec->hash);
   return len;
 }
 
-int s21_format_percent(char *str, FormatSpec *spec) {
+int MY_format_percent(char *str, FormatSpec *spec) {
   int len = 0;
   int padding = 0;
   if (spec->width > 1) padding = spec->width - 1;
   if (!spec->minus && padding > 0) {
     char pad_char = spec->zero ? '0' : ' ';
-    len += s21_add_padding(str + len, padding, pad_char);
+    len += MY_add_padding(str + len, padding, pad_char);
   }
 
   str[len++] = '%';
 
   if (spec->minus && padding > 0) {
-    len += s21_add_padding(str + len, padding, ' ');
+    len += MY_add_padding(str + len, padding, ' ');
   }
 
   return len;
@@ -741,19 +741,19 @@ static int handle_integer_specifiers(char *str, FormatSpec *spec, va_list *args,
   switch (specifier) {
     case 'd':
     case 'i':
-      len = s21_format_int(str, spec, (long long)value);
+      len = MY_format_int(str, spec, (long long)value);
       break;
     case 'u':
-      len = s21_format_uint(str, spec, value);
+      len = MY_format_uint(str, spec, value);
       break;
     case 'o':
-      len = s21_format_octal(str, spec, value);
+      len = MY_format_octal(str, spec, value);
       break;
     case 'x':
-      len = s21_format_hex(str, spec, value, 0);
+      len = MY_format_hex(str, spec, value, 0);
       break;
     case 'X':
-      len = s21_format_hex(str, spec, value, 1);
+      len = MY_format_hex(str, spec, value, 1);
       break;
     default:
       len = 0;
@@ -768,19 +768,19 @@ static int handle_float_specifiers(char *str, FormatSpec *spec, va_list *args,
   int len;
   switch (specifier) {
     case 'f':
-      len = s21_format_float(str, spec, value);
+      len = MY_format_float(str, spec, value);
       break;
     case 'e':
-      len = s21_format_exp(str, spec, value, 0);
+      len = MY_format_exp(str, spec, value, 0);
       break;
     case 'E':
-      len = s21_format_exp(str, spec, value, 1);
+      len = MY_format_exp(str, spec, value, 1);
       break;
     case 'g':
-      len = s21_format_g(str, spec, value, 0);
+      len = MY_format_g(str, spec, value, 0);
       break;
     case 'G':
-      len = s21_format_g(str, spec, value, 1);
+      len = MY_format_g(str, spec, value, 1);
       break;
     default:
       len = 0;
@@ -795,24 +795,24 @@ static int handle_other_specifiers(char *str, FormatSpec *spec, va_list *args,
   switch (specifier) {
     case 'c': {
       int c = va_arg(*args, int);
-      len = s21_format_char(str, spec, c);
+      len = MY_format_char(str, spec, c);
       break;
     }
     case 's': {
       const char *s = va_arg(*args, char *);
-      len = s21_format_string(str, spec, s);
+      len = MY_format_string(str, spec, s);
       break;
     }
     case 'p': {
       void *ptr = va_arg(*args, void *);
-      len = s21_format_pointer(str, spec, ptr);
+      len = MY_format_pointer(str, spec, ptr);
       break;
     }
     case 'n':
       len = 0;
       break;
     case '%':
-      len = s21_format_percent(str, spec);
+      len = MY_format_percent(str, spec);
       break;
     default:
       str[0] = '%';
@@ -823,7 +823,7 @@ static int handle_other_specifiers(char *str, FormatSpec *spec, va_list *args,
   return len;
 }
 
-int s21_handle_specifier(char *str, FormatSpec *spec, va_list *args) {
+int MY_handle_specifier(char *str, FormatSpec *spec, va_list *args) {
   handle_star_args(spec, args);
   char sp = spec->specifier;
   int len;
@@ -838,7 +838,7 @@ int s21_handle_specifier(char *str, FormatSpec *spec, va_list *args) {
   return len;
 }
 
-int s21_sprintf(char *str, const char *format, ...) {
+int MY_sprintf(char *str, const char *format, ...) {
   va_list args;
   va_start(args, format);
   int total_len = 0;
@@ -851,15 +851,15 @@ int s21_sprintf(char *str, const char *format, ...) {
       }
 
       FormatSpec spec;
-      s21_parse_format(&p, &spec);
+      MY_parse_format(&p, &spec);
       if (spec.specifier == 'n') {
         int *n_ptr = va_arg(args, int *);
-        if (n_ptr != S21_NULL) {
+        if (n_ptr != MY_NULL) {
           *n_ptr = total_len;
         }
         continue;
       }
-      int len = s21_handle_specifier(str + total_len, &spec, &args);
+      int len = MY_handle_specifier(str + total_len, &spec, &args);
       total_len += len;
     } else {
       str[total_len++] = *p;

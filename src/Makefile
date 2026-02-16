@@ -3,11 +3,11 @@ CFLAGS = -std=c11 -Wall -Wextra -Werror -pedantic -I.
 GCOV_FLAGS = -fprofile-arcs -ftest-coverage
 TEST_FLAGS = -lcheck -lm -lpthread -lsubunit 
 
-SRC_FILES = s21_string.c s21_strerror.c s21_sscanf.c s21_sprintf.c
+SRC_FILES = MY_string.c  MY_sprintf.c
 OBJ_FILES = $(SRC_FILES:.c=.o)
 
-LIBRARY = s21_string.a
-GCOV_LIBRARY = s21_string_gcov.a
+LIBRARY = MY_string.a
+GCOV_LIBRARY = MY_string_gcov.a
 
 FORMAT_FILES = *.c *.h tests/*.c
 
